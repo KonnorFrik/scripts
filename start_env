@@ -1,0 +1,84 @@
+#! /usr/local/bin/python3.10
+from pynput.keyboard import Key, Controller
+import sys, os
+from time import sleep
+
+"""
+usage
+start_env path/to/work/dir/with/venv/folder/
+"""
+DELAY = 0.2
+mini_DELAY = 0.015
+
+
+def move_up(kb: Controller):
+    kb.press(Key.alt)
+    kb.press(Key.up)
+
+    kb.release(Key.up)
+    kb.release(Key.alt)
+
+
+def split_down(kb: Controller):
+    kb.press(Key.ctrl)
+    kb.press(Key.shift)
+    kb.press("o")
+
+    kb.release("o")
+    kb.release(Key.shift)
+    kb.release(Key.ctrl)
+
+
+def run_command(kb: Controller, command: str):
+    kb.type(command)
+    kb.tap(Key.enter)
+
+
+def loop_tap(kb: Controller, pressed_keys: list | tuple, tap_count: int, key):
+    with kb.pressed(*pressed_keys):
+        for _ in range(tap_count):
+            kb.tap(key)
+            sleep(mini_DELAY)
+
+
+def main(path: str):
+    if not os.path.exists(path):
+        raise Exception("Wrong env path argument")
+
+    kb = Controller()
+
+    split_down(kb)
+    sleep(DELAY)
+
+    run_command(kb, f"cd {path}")
+    sleep(DELAY)
+
+    run_command(kb, "vrun")
+    sleep(DELAY)
+
+    loop_tap(kb=kb, pressed_keys=(Key.ctrl,), tap_count=3, key="+")
+    sleep(DELAY)
+
+    loop_tap(kb=kb, pressed_keys=(Key.ctrl, Key.shift), tap_count=15, key=Key.down)
+    sleep(DELAY)
+
+    move_up(kb)
+    sleep(DELAY)
+
+    run_command(kb, f"cd {path}")
+    sleep(DELAY)
+
+    run_command(kb, "vrun")
+    sleep(DELAY)
+
+    loop_tap(kb=kb, pressed_keys=(Key.ctrl,), tap_count=3, key="+")
+    sleep(DELAY)
+
+    run_command(kb, "nvim")
+    with kb.pressed(Key.ctrl):
+        kb.tap("p")
+
+
+if __name__ == "__main__":
+    path = sys.argv[1]
+    main(path)

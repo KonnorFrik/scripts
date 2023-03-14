@@ -1,0 +1,1 @@
+start_env - fast open given work directory, split terminator-terminal, start python env in both window with "vrun" command from "oh-my-zsh" and open nvim
